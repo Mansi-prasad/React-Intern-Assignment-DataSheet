@@ -1,4 +1,3 @@
-// import Footer from "../components/Footer"
 import Header from "../components/Header"
 import Toolbar from "../components/Toolbar"
 import Tabs from "../components/Tabs"
@@ -17,5 +16,4 @@ const Home = () => {
     </>
   )
 }
-
 export default Home;
