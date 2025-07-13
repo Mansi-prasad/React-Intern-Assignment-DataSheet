@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 .cell-style {
   @apply border border-[#f6eeea] p-2;
 }
@@ -12,4 +11,10 @@
 }
 .flex-content-justify-between{
   @apply flex items-center justify-between gap-2;
+}
+.btn-style{
+  @apply flex items-center px-4 py-1 border border-gray-300 rounded-sm text-gray-700 gap-1 hover:cursor-pointer;
+}
+.toolbar-items-style{
+  @apply flex items-center gap-1 hover:cursor-pointer;
 }
