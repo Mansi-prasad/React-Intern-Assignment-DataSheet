@@ -7,36 +7,39 @@ import Import from "../assets/images/Import.png"
 import Export from "../assets/images/Export.png"
 import Share from "../assets/images/Share.png"
 import Create from "../assets/images/Create.png"
+import Show from "../assets/images/Show.jpg"
+import { useState } from "react"
 const Toolbar = () => {
+  const [hide, setHide]=useState(true);
   return (
     <div className="flex justify-between py-2 pl-2 pr-8 border-b border-gray-300 text-sm">
       {/* left */}
-      <div className="flex gap-10">
-        <div className="flex items-center gap-1 border-r border-gray-300 px-2 ">
+      <div className="flex gap-10 hover:cursor-pointer">
+        <div onClick={()=>{console.log("Toolbar working..");alert("Tool bar clicked!")}} className="flex items-center gap-1 border-r border-gray-300 px-2 ">
           <p>Tool bar</p>
           <div>
             <img src={DoubleArrow} alt="double-arr" />
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <div className="cursor-pointer">
-            <img src={Hide} alt="hide" />
+          <div onClick={()=>setHide(!hide)} className="cursor-pointer">
+            <img src={hide ? Hide : Show} alt={hide ? "hide" : "show"} />
           </div>
-          <p>Hide fields</p>
+          <p>{hide ? "Hide fields":"Show fields"}</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div onClick={()=>alert("Sorting...")} className="toolbar-items-style">
           <div>
             <img src={UpDown} alt="up-down-arr" />
           </div>
           <p>Sort</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div onClick={()=>alert("Filter data...")} className="toolbar-items-style">
           <div>
             <img src={Filter} alt="filter" />
           </div>
           <p>Filter</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div onClick={()=>alert("View cell")} className="toolbar-items-style">
           <div>
             <img src={ArrowAutofit} alt="ArrowAutofit" />
           </div>
@@ -45,25 +48,25 @@ const Toolbar = () => {
       </div>
       {/* right */}
       <div className="flex gap-2">
-        <div className="flex items-center px-4 py-1 border border-gray-300 rounded-sm text-gray-700 gap-1">
+        <div onClick={()=>{console.log("Import clicked");alert("Import...")}} className="btn-style">
           <div>
             <img src={Import} alt="import" />
           </div>
           <p>Import</p>
         </div>
-        <div className="flex items-center px-4 py-1 border border-gray-300 rounded-sm text-gray-700 gap-1">
+        <div onClick={()=>{console.log("Export clicked");alert("Export...")}} className="btn-style">
           <div>
             <img src={Export} alt="export" />
           </div>
           <p>Export</p>
         </div>
-        <div className="flex items-center px-4 py-1 border border-gray-300 rounded-sm text-gray-700 gap-1">
+        <div onClick={()=>{console.log("Share clicked");alert("Share the data...")}} className="btn-style">
           <div>
             <img src={Share} alt="share" />
           </div>
           <p>Share</p>
         </div>
-        <div className="flex items-center gap-1 bg-[#4B6A4F] rounded-sm px-8 py-2 text-white">
+        <div onClick={()=>{console.log("New Action clicked");alert("Create a new action")}} className="flex items-center gap-1 bg-[#4B6A4F] rounded-sm px-8 py-2 text-white hover:cursor-pointer">
           <div>
             <img src={Create} alt="create" className="text-white"/>
           </div>
