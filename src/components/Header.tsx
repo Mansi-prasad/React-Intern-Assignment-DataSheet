@@ -22,7 +22,7 @@ const Header = () => {
             <img src={Chevron} alt="arr" />
           </div>
           <p className="text-gray-900">Spreadsheet 3 </p> 
-        <div>
+        <div onClick={()=>alert("Open more options..")} className="hover:cursor-pointer">
           <img src={More} alt="more" />
         </div>
         </div>
@@ -44,8 +44,8 @@ const Header = () => {
               2
             </div>
           </div>
-          <div className="flex gap-4 items-center">
-            <div className="text-3xl text-gray-700 ">
+          <div className="flex gap-2 items-center">
+            <div onClick={()=>alert("Open user profile...")} className="text-3xl text-gray-700 hover:cursor-pointer">
               <img src={Profile} alt="profile" />
             </div>
             <div className="">
@@ -57,8 +57,4 @@ const Header = () => {
       </div>
   )
 }
-
-
-
-
 export default Header
