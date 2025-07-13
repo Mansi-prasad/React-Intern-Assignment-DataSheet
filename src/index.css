@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+
+.cell-style {
+  @apply border border-[#f6eeea] p-2;
+}
+.head-cell-bg {
+  @apply bg-[#F8F8F8] border border-[#f6eeea];
+}
+.flex-content-center{
+  @apply flex items-center justify-center gap-2;
+}
+.flex-content-justify-between{
+  @apply flex items-center justify-between gap-2;
+}
