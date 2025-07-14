@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useState } from 'react';
+import type { ColumnDef } from "@tanstack/react-table";
+import type { JobRow } from '../types/Types';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+} from "@tanstack/react-table";
 import Link from "../assets/images/Link.png";
 import Refresh from "../assets/images/Refresh.png";
 import Shape from "../assets/images/Shape.png";
 import More from "../assets/images/More.png";
 import ProfileImg from "../assets/images/ProfileImg.png";
 import Bag from "../assets/images/Bag.png";
-import Hash from "../assets/images/Hash.png";
 import URL from "../assets/images/URL.png";
 import Assign from "../assets/images/Assign.png";
 import Status from "../assets/images/Status.png";
@@ -13,69 +19,12 @@ import Down from "../assets/images/Down.png";
 import Calendar from "../assets/images/Calendar.png";
 import Add from "../assets/images/Add.png";
 import Create from "../assets/images/Create.png";
-
-const filledRows = [
-  {
-    jobRequest: "Launch social media campaign for pro...",
-    submitted: "15-11-2024",
-    status: "In-process",
-    submitter: "Aisha Patel",
-    url: "www.aishapatel...",
-    assigned: "Sophie Choudhury",
-    priority: "Medium",
-    dueDate: "20-11-2024",
-    estValue: "6,200,000 ₹",
-  },
-  {
-    jobRequest: "Update press kit for company redesign",
-    submitted: "28-10-2024",
-    status: "Need to start",
-    submitter: "Irfan Khan",
-    url: "www.irfankhanp...",
-    assigned: "Tejas Pandey",
-    priority: "High",
-    dueDate: "30-10-2024",
-    estValue: "3,500,000 ₹",
-  },
-  {
-    jobRequest: "Finalize user testing feedback for app...",
-    submitted: "05-12-2024",
-    status: "In-process",
-    submitter: "Mark Johnson",
-    url: "www.markjohnsons...",
-    assigned: "Rachel Lee",
-    priority: "Medium",
-    dueDate: "10-12-2024",
-    estValue: "4,750,000 ₹",
-  },
-  {
-    jobRequest: "Design new features for the website",
-    submitted: "10-01-2025",
-    status: "Complete",
-    submitter: "Emily Green",
-    url: "www.emilygreen...",
-    assigned: "Tom Wright",
-    priority: "Low",
-    dueDate: "15-01-2025",
-    estValue: "5,900,000 ₹",
-  },
-  {
-    jobRequest: "Prepare financial report for Q4",
-    submitted: "25-01-2025",
-    status: "Blocked",
-    submitter: "Jessica Brown",
-    url: "www.jessicabro...",
-    assigned: "Kevin Smith",
-    priority: "Low",
-    dueDate: "30-01-2025",
-    estValue: "2,800,000 ₹",
-  },
-];
+import filledRows from "../utils/FillRowData.json";
 
 // Fill up to 100 rows
 const data = [
   ...filledRows,
-  ...Array.from({ length: 95 }, () => ({
+  ...Array.from({ length: 495 }, () => ({
     jobRequest: "",
     submitted: "",
     status: "",
@@ -89,22 +38,166 @@ const data = [
 ];
 
 const Spreadsheet: React.FC = () => {
-  return (
-    <div className="max-w-full  overflow-hidden pr-8">
+  const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
+  const [columnVisibility, setColumnVisibility] = useState({});
 
-      {/* Table */}
+  const columns: ColumnDef<JobRow>[] = [
+  {
+    header: "#",
+    cell: ({ row }) => row.index + 1,
+  },
+  {
+    accessorKey: "jobRequest",
+    header: "Job Request",
+  },
+  {
+    accessorKey: "submitted",
+    header: "Submitted",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ getValue }) => {
+      const value = getValue<string>() ?? "";
+      const statusColor = {
+        "need to start": "text-gray-700 bg-gray-300",
+        "complete": "text-green-700 bg-green-300",
+        "blocked": "text-red-700 bg-red-300",
+        "in-process": "text-yellow-700 bg-yellow-100",
+      }[value.toLowerCase()] ?? "";
+      return <div className={`px-2 py-1 rounded-4xl text-sm font-medium text-center ${statusColor}`}>{value}</div>;
+    },
+  },
+  {
+    accessorKey: "submitter",
+    header: "Submitter",
+  },
+  {
+    accessorKey: "url",
+    header: "URL",
+    cell: ({ getValue }) => <span className="underline">{getValue<string>()}</span>,
+  },
+  {
+    accessorKey: "assigned",
+    header: "Assigned",
+  },
+  {
+    accessorKey: "priority",
+    header: "Priority",
+    cell: ({ getValue }) => {
+      const value = getValue<string>() ?? "";
+      const color = {
+        high: "text-red-700 font-bold",
+        medium: "text-yellow-700 font-bold",
+        low: "text-blue-700 font-bold",
+      }[value.toLowerCase()] ?? "";
+      return <div className="w-full text-center">
+        <span className={color}>{value}</span>
+      </div>;
+    },
+  },
+  {
+    accessorKey: "dueDate",
+    header: "Due Date",
+  },
+  {
+    accessorKey: "estValue",
+    header: "Est. Value",
+  },
+];
+
+const table = useReactTable({
+  data,
+  columns,
+  getCoreRowModel: getCoreRowModel(),
+  enableColumnResizing: true, //  allow resizing
+  columnResizeMode: 'onChange', // resize live as we drag
+  state: {
+    columnVisibility,
+  },
+  onColumnVisibilityChange: setColumnVisibility,
+});
+
+
+  const handleKeyDown = (
+  e: React.KeyboardEvent<HTMLTableCellElement>,
+  row: number,
+  col: number
+) => {
+  e.preventDefault();
+
+  const maxRow = data.length - 1;
+  const minCol = 1;
+  const maxCol = 10;
+
+  let nextRow = row;
+  let nextCol = col;
+
+  switch (e.key) {
+    case "ArrowRight":
+      if (col === maxCol) {
+        if (row < maxRow) {
+          nextRow = row + 1;
+          nextCol = minCol;
+        }
+      } else {
+        nextCol = col + 1;
+      }
+      break;
+
+    case "ArrowLeft":
+      if (col === minCol) {
+        if (row > 0) {
+          nextRow = row - 1;
+          nextCol = maxCol;
+        }
+      } else {
+        nextCol = col - 1;
+      }
+      break;
+
+    case "ArrowDown":
+      if (row < maxRow) {
+        nextRow = row + 1;
+      }
+      break;
+
+    case "ArrowUp":
+      if (row > 0) {
+        nextRow = row - 1;
+      }
+      break;
+
+    default:
+      return;
+  }
+
+  setFocusedCell({ row: nextRow, col: nextCol });
+
+  // Focus the next cell manually
+  const selector = `td[data-row="${nextRow}"][data-col="${nextCol}"]`;
+  const nextElement = document.querySelector<HTMLTableCellElement>(selector);
+  if (nextElement) {
+    nextElement.focus(); // focus with scroll
+  }
+};
+
+return (
+    <div className="max-w-full  overflow-hidden pr-8">
       <div className=" max-h-[540px] overflow-x-auto overflow-y-auto scrollbar-hide">
-        <table className="min-w-full table-fixed border-separate border-spacing-0">
+       <div className="flex flex-wrap gap-3">
+        </div> 
+      {/* Table */}
+        <table className="min-w-full table-fixed border-separate border-spacing-0 ">
           <thead className="sticky top-0 z-10 bg-white">
             {/* First header row */}
-            <tr>
+            <tr className='py-2'>
               <th>
                 <div className=" bg-white">
-                  {/* Blank */}
                 </div>
               </th>
               <th colSpan={4} className="mx-4">
-                <div className="flex items-center gap-4 px-6 bg-[#E2E2E2] py-1 border border-gray-100">
+                <div className="flex items-center gap-4 px-4 bg-[#E2E2E2] py-1 border border-gray-100">
                   <div className="flex-content-center py-1 px-4 bg-[#EEEEEE] rounded-sm">
                     <div>
                       <img src={Link} alt="" />
@@ -113,7 +206,7 @@ const Spreadsheet: React.FC = () => {
                       <p>Q3 Financial Overview</p>
                     </div>
                   </div>
-                  <div>
+                  <div onClick={()=>{console.log("Refesh"); alert("Refresh clicked!")}} className="hover:cursor-pointer">
                     <img src={Refresh} alt="refresh" />
                   </div>
                 </div>
@@ -169,125 +262,133 @@ const Spreadsheet: React.FC = () => {
 
             </tr>
             {/* Second header row */}
-            <tr className="">
-              <th className="head-cell-bg p-2">
-                <img src={Hash} alt="#"/>
-              </th>
-              <th rowSpan={2} className="head-cell-bg text-left">
-                <div className="flex-content-justify-between px-2">
-                  <div className="flex gap-2 items-center">
-                    <div>
-                      <img src={Bag} alt="bag" />
+           <tr>
+              {table.getFlatHeaders().map((header) => (
+                <th
+                  key={header.id}
+                  style={{
+                    width: header.index === 0 ? "20px" : header.getSize(),
+                    minWidth: header.index === 0 ? "20px" : undefined,
+                  }}
+                  className={`relative ${
+                    header.index === 0
+                      ? "head-cell-bg p-2"
+                      : header.index === 6
+                      ? "bg-[#E8F0EF] border border-[#f6eeea]"
+                      : header.index === 7 || header.index === 8
+                      ? "bg-[#EFE3FC] border border-[#f6eeea]"
+                      : header.index === 9
+                      ? "bg-[#FFF6E0] border-b-[#f6eeea]"
+                      : "head-cell-bg"
+                  }`}
+                >
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex gap-2 items-center">
+                      {/* Icons */}
+                      {header.index === 1 && <img src={Bag} alt="bag" />}
+                      {header.index === 2 && <img src={Calendar} alt="calendar" />}
+                      {header.index === 3 && <img src={Status} alt="status" />}
+                      {header.index === 4 && <img src={ProfileImg} alt="profile" />}
+                      {header.index === 5 && <img src={URL} alt="url" />}
+                      {header.index === 6 && <img src={Assign} alt="assign" />}
+                      {header.index === 0 && ""}
+
+                      {/* Label */}
+                      {!header.isPlaceholder && (
+                        <p className="select-none">
+                          {typeof header.column.columnDef.header === "string"
+                            ? header.column.columnDef.header
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </p>
+                      )}
                     </div>
-                    <p>Job Request</p>
-                  </div>
-                  <div>
-                    <img src={Down} alt="arrow" />
-                  </div>
+
+                  {/* Down arrow on the right */}
+                  {(() => {
+                    const headerLabel =
+                      typeof header.column.columnDef.header === "string"
+                        ? header.column.columnDef.header
+                        : ""; 
+
+                    // List of headers that should show the Down arrow
+                    const headersWithDown = [
+                      "Job Request",
+                      "Submitter",
+                      "Status",
+                      "Submitted",
+                      "URL",
+                    ];
+                    return headersWithDown.includes(headerLabel) && (
+                      <img src={Down} alt="" />
+                    );
+                  })()}
                 </div>
-              </th>
-              <th rowSpan={2} className="head-cell-bg text-left">
-                <div className="flex-content-justify-between px-2">
-                  <div className="flex gap-2 items-center">
-                    <div>
-                      <img src={Calendar} alt="calender" />
-                    </div>
-                      <p>Submitted</p>
-                    </div>
-                  <div>
-                    <img src={Down} alt="arrow" />
-                  </div>
-                </div>
-              </th>
-              <th rowSpan={2} className="head-cell-bg text-left">
-                 <div className="flex-content-justify-between px-2 ">
-                  <div className="flex gap-2 items-center">
-                    <div>
-                      <img src={Status} alt="status" />
-                    </div>
-                      <p>Status</p>
-                    </div>
-                  <div>
-                    <img src={Down} alt="arrow" />
-                  </div>
-                </div>
-              </th>
-              <th rowSpan={2} className="head-cell-bg text-left">
-                <div className="flex-content-justify-between px-2">
-                  <div className="flex gap-2 items-center">
-                    <div>
-                      <img src={ProfileImg} alt="profileImg" />
-                    </div>
-                      <p>Submitter</p>
-                    </div>
-                  <div>
-                    <img src={Down} alt="arrow" />
-                  </div>
-                </div>
-              </th>
-              <th rowSpan={2} className="head-cell-bg text-left">
-                <div className="flex-content-justify-between px-2">
-                  <div className="flex gap-2 items-center">
-                    <div>
-                      <img src={URL} alt="url" />
-                    </div>
-                      <p>URL</p>
-                    </div>
-                  <div>
-                    <img src={Down} alt="arrow" />
-                  </div>
-                </div>
-              </th>
-              <th rowSpan={2} className=" bg-[#E8F0EF] border border-[#f6eeea] text-left">
-                <div className="flex-content-center px-2 ">
-                  <div>
-                    <img src={Assign} alt="assign" />
-                  </div>
-                  <div>
-                    <p>Assigned</p>
-                  </div>       
-                </div>
-              </th>
-              <th className="bg-[#EFE3FC] border border-[#f6eeea] text-left">
-                <div className=" bg-[#EFE3FC] text-[#6A5C80]  px-2  w-32">        
-                    <p>Priority</p>       
-                </div>
-              </th>
-              <th className="bg-[#EFE3FC] border border-[#f6eeea] text-left">
-                <div className=" text-[#6A5C80]  px-2 w-32">
-                  <p>Due Date</p>
-                </div>
-              </th>
-              <th className="bg-[#FFF6E0] border-b-[#f6eeea]">
-                <div className="  text-[#8C7162] px-2 w-32">
-                  <p>Est. Value</p>
-                </div>
-              </th>
-              <th className="border-l border-r border-dashed border-gray-300 px-2" style={{borderBottom: "1px solid #f6eeea"}}>
-                <div className=" bg-white px-2 w-31">
-                  {/* blank */}
-                </div>
-              </th>
-            </tr>
+
+                  {/* Resizer */}
+                  {header.index !== 0 && header.column.getCanResize() && (
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className="absolute right-0 top-0 h-full w-0.5 cursor-col-resize bg-gray-400 opacity-10 hover:opacity-40"
+                    />
+                  )}
+                </th>
+              ))}
+
+              {/* Blank last cell (Add) */}
+              <th
+                className="border-l border-r border-dashed border-gray-300 px-2"
+                style={{
+                  borderBottom: "1px solid #f6eeea",
+                  width: "140px", 
+                  minWidth: "50px",
+                }}
+              />
+          </tr>
           </thead>
-          <tbody className="divide-y">
-            {data.map((row, i) => (
-              <tr key={i} className="hover:bg-gray-50">
-                <td className="cell-style">{i + 1}</td>
-                <td className="cell-style whitespace-nowrap tracking-wide">{row.jobRequest}</td>
-                <td className="cell-style text-right">{row.submitted}</td>
-                <td className="cell-style whitespace-nowrap">{row.status}</td>
-                <td className="cell-style whitespace-nowrap">{row.submitter}</td>
-                <td className="cell-style underline">{row.url}</td>
-                <td className="cell-style whitespace-nowrap">{row.assigned}</td>
-                <td className="cell-style ">{row.priority}</td>
-                <td className="cell-style ">{row.dueDate}</td>
-                <td className="cell-style ">{row.estValue}</td>
-                <td className="border-l border-r border-dashed border-gray-300 px-2" style={{borderBottom: "1px solid #f6eeea"}}></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <tbody>
+          {table.getRowModel().rows.map((row, rowIndex) => (
+            <tr key={row.id} className='whitespace-nowrap overflow-hidden text-ellipsis'>
+              {row.getVisibleCells().map((cell, colIndex) => (
+                <td
+                  key={cell.id}
+                  tabIndex={0}
+                  data-row={rowIndex}
+                  data-col={colIndex}
+                  onFocus={colIndex === 0 ? undefined :() => setFocusedCell({ row: rowIndex, col: colIndex })}
+                  onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
+                  className={`border border-[#f6eeea] p-2 outline-none ${
+                    focusedCell?.row === rowIndex && focusedCell?.col === colIndex
+                      ? "ring-1 ring-[#6C8B70] shadow-[0_0_8px_2px_rgba(34,197,94,0.5)]"
+                      : ""
+                  }`}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+              <td
+                tabIndex={0}
+                data-row={rowIndex}
+                data-col={row.getVisibleCells().length}
+                onFocus={() => setFocusedCell({ row: rowIndex, col: row.getVisibleCells().length })}
+                onKeyDown={(e) =>
+                  handleKeyDown(e, rowIndex, row.getVisibleCells().length)
+                }
+                className={`border-l border-r border-dashed border-gray-300 px-2 outline-none ${
+                  focusedCell?.row === rowIndex &&
+                  focusedCell?.col === row.getVisibleCells().length
+                    ? "ring-1 ring-[#6C8B70] shadow-[0_0_8px_2px_rgba(34,197,94,0.5)]"
+                    : ""
+                }`}
+                style={{ borderBottom: "1px solid #f6eeea" }}
+              />
+            </tr>
+          ))}
+        </tbody>
+      </table>
       </div>
     </div>
   );
