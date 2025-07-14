@@ -38,7 +38,7 @@ const Header = () => {
             <input type="text" name="search" id="search" placeholder="Search within sheet" className="border-0 outline-0 text-sm" />
           </div>
         </div>
-          <div className="relative inline-block mr-4">
+          <div onClick={()=>alert("Show notifications!")} className="relative inline-block mr-4 hover:cursor-pointer">
             <img src={Bell} alt="bell" className="w-5 h-5" />
             <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-green-800 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               2
